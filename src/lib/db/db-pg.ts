@@ -79,3 +79,17 @@ export async function deleteReservation(id: string) {
 export async function closePool() {
   await pool.end()
 }
+
+// User helpers for Auth
+export async function getUserByEmail(email: string) {
+  const res = await pool.query('SELECT id, email, password_hash, role FROM users WHERE email=$1', [email])
+  return res.rows[0] ?? null
+}
+
+export async function createUser(user: { email: string; password_hash?: string; role?: string }) {
+  const res = await pool.query(
+    'INSERT INTO users (email, password_hash, role) VALUES ($1,$2,$3) RETURNING id, email, role',
+    [user.email, user.password_hash || null, user.role || 'user']
+  )
+  return res.rows[0]
+}
