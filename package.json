@@ -1,0 +1,32 @@
+{
+  "name": "backend-zaliczenie",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint",
+    "docker:up": "docker-compose up --build",
+    "docker:down": "docker-compose down",
+    "prepare": "prisma generate || true"
+  },
+  "dependencies": {
+    "next": "16.0.3",
+    "react": "19.2.0",
+    "react-dom": "19.2.0",
+    "zustand": "^4.4.0",
+    "@auth/core": "^1.0.0",
+    "@auth/nextjs": "^1.0.0",
+    "pg": "^8.11.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "babel-plugin-react-compiler": "1.0.0",
+    "eslint": "^9",
+    "eslint-config-next": "16.0.3",
+    "typescript": "^5"
+  }
+}
