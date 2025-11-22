@@ -1,0 +1,107 @@
+.align-center {
+    align-items: center !important;
+}
+
+// General utility classes
+.mb-05 {
+    margin-bottom: 0.5rem !important;
+}
+.mb-1 {
+    margin-bottom: 1rem !important;
+}
+.mt-1 {
+    margin-top: 1rem !important;
+}
+.m-0 {
+    margin: 0 !important;
+}
+.text-center {
+    text-align: center !important;
+}
+.text-left {
+    text-align: left !important;
+}
+.mx-auto {
+    margin-left: auto !important;
+    margin-right: auto !important;
+}
+.flex {
+    display: flex;
+}
+
+// Font size and color
+.fs-0875 {
+    font-size: 0.875rem !important;
+}
+.fs-075 {
+    font-size: 0.75rem !important;
+}
+.text-muted-custom {
+    color: #94a3b8 !important;
+}
+
+// Card/modal
+.card-modal {
+    max-width: 500px;
+    width: 90%;
+    margin: 1rem;
+}
+
+.overlay-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.flex-between {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+.flex-wrap {
+    flex-wrap: wrap;
+}
+.gap-05 {
+    gap: 0.5rem !important;
+}
+.gap-1 {
+    gap: 1rem !important;
+}
+
+// Admin nav
+.admin-nav {
+    background: white;
+    padding: 1rem 2rem;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+    margin-bottom: 2rem;
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.ml-auto {
+    margin-left: auto !important;
+}
+
+// Card margin
+.card-mb-2 {
+    margin-bottom: 2rem !important;
+}
+
+// Custom font weight
+.fw-bold {
+    font-weight: 700 !important;
+}
+
+// Custom font color
+.text-blue {
+    color: #2563eb !important;
+}

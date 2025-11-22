@@ -1,73 +1,128 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🚗 Car Rental App (Next.js + PostgreSQL)
 
-## Getting Started
+This is a full-stack car rental application built with Next.js 16, React 19, PostgreSQL 15, and node-postgres. It features authentication, admin/user dashboards, car management, and rental workflows. The project is ready for local development and includes Docker support for the database.
 
-First, run the development server:
+---
+
+## 🚀 Quick Start
+
+### 1. Clone & Install
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+git clone <repo-url>
+cd backend-zaliczenie
+yarn install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+`
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### 2. Environment Setup
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
-
-## Project structure and branches (rental app)
-
-This repository is prepared as a single Next.js project that will later contain two separate branches with different database implementations:
-
-- `pg` — implementation using `node-postgres` (pg)
-- `prisma` — implementation using `Prisma` and `@prisma/client`
-
-Right now the project intentionally does not include database code. The repo contains scaffolding for authentication (`Auth.js`), state management (`Zustand`), and a placeholder `docker-compose.yml` with an optional Postgres service commented out.
-
-## Running locally (no DB)
-
-1. Copy the example env: create a `.env.local` from `.env.example` and set `NEXTAUTH_SECRET`.
+Copy the example environment file and set a secret:
 
 ```powershell
 copy .\.env.example .\.env.local
+# Edit .env.local and set NEXTAUTH_SECRET to a random string
 ```
 
-2. Install and run:
+### 3. Start Database & App
 
-```powershell
-npm install
-npm run dev
+Start PostgreSQL and the app using Docker Compose:
+
+```bash
+yarn docker:up
 ```
 
-3. Open `http://localhost:3000`.
+The app will be available at [http://localhost:3000](http://localhost:3000)
 
-## Adding the database later
+---
 
-When you're ready to add the database implementation, follow these steps:
+## 🧑‍💻 Demo Accounts
 
-1. Create a new branch `pg` or `prisma`.
-2. Add the DB client dependency (e.g. `pg` or `@prisma/client` + `prisma`).
-3. Implement the DB adapter under `src/lib/db/` and update API routes to use the chosen adapter.
-4. If using Prisma, add `prisma/schema.prisma` and run migrations or `prisma db push`.
+All demo accounts use the password: `password123`
 
-This project keeps the DB layer isolated so the two branches can diverge only in `src/lib/db` and related API handlers.
+### 👤 Regular User
+
+-   **Email:** `user@rental.com`
+-   **Password:** `password123`
+-   **Access:** Browse cars, create reservations, view own rental history
+
+### 👑 Administrator
+
+-   **Email:** `admin@rental.com`
+-   **Password:** `password123`
+-   **Access:** Full access including:
+    -   All user features
+    -   Manage car inventory (add, edit, delete)
+    -   View all rentals across all users
+    -   Admin dashboard
+
+---
+
+## 🗂️ Project Structure
+
+-   `src/app/` — Next.js app directory (public, dashboard, admin, API routes)
+-   `src/components/` — Reusable UI components
+-   `src/store/` — Zustand state management
+-   `src/lib/` — Database adapters, auth, helpers
+-   `src/styles/` — SCSS styles (utility, admin, global)
+-   `docker/` — Database seed/init scripts
+
+---
+
+## 🐘 Database & Seed Data
+
+-   PostgreSQL 15 runs in Docker (see `docker-compose.yml`)
+-   On first run, the database is seeded with:
+    -   2 demo users (see above)
+    -   5 sample vehicles (Toyota Corolla, Ford Focus, Honda Civic, BMW 3 Series, Tesla Model 3)
+-   Seed logic is in `docker/init.sql` (auto-run by Postgres container)
+
+---
+
+## 📝 Features
+
+-   User authentication (local, session-based)
+-   Browse, reserve, and view cars
+-   User dashboard for rental history
+-   Admin dashboard for car and rental management
+-   Responsive UI, utility-first SCSS
+-   TypeScript strict mode, no `any` types
+
+---
+
+## 🛠️ Scripts
+
+-   `yarn dev` — Start Next.js in development mode
+-   `yarn build` — Build for production
+-   `yarn start` — Start production server
+-   `yarn docker:up` — Start Postgres and app via Docker Compose
+-   `yarn docker:down` — Stop Docker Compose services
+
+---
+
+## ⚙️ Configuration
+
+-   Environment variables: see `.env.example`
+-   Database connection: `DATABASE_URL` in `.env.local` (default works with provided Docker setup)
+
+---
+
+## 📚 Tech Stack
+
+-   Next.js 16, React 19
+-   PostgreSQL 15, node-postgres
+-   Zustand (state), Auth.js (auth), bcryptjs (passwords)
+-   TypeScript 5, SCSS
+
+---
+
+## 🐳 Docker
+
+The included `docker-compose.yml` spins up both the app and a Postgres database. The database is seeded automatically on first run.
+
+---
+
+## License
+
+MIT

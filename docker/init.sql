@@ -24,12 +24,23 @@ CREATE TABLE IF NOT EXISTS reservations (
   user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   from_ts TIMESTAMP WITH TIME ZONE NOT NULL,
   to_ts TIMESTAMP WITH TIME ZONE NOT NULL,
+  status TEXT NOT NULL DEFAULT 'pending',
   created_at TIMESTAMP WITH TIME ZONE DEFAULT now()
 );
+
+-- Insert demo users (password: 'password123' for all)
+INSERT INTO users (email, password_hash, role)
+VALUES
+('admin@rental.com', '$2a$10$kUD9q9lQiY2OtOlHmJJkNeQBjAnoI5aiVE28ckdShPTSUc1DhpcxW', 'admin'),
+('user@rental.com', '$2a$10$9J1AtrL5sB/3RqeNb1FVbeT9Jasu0j2ErMDZA/Sg57L20UQkkCTv6', 'user')
+ON CONFLICT DO NOTHING;
 
 -- Insert demo vehicles
 INSERT INTO vehicles (make, model, year, available)
 VALUES
 ('Toyota', 'Corolla', 2020, true),
-('Ford', 'Focus', 2019, true)
+('Ford', 'Focus', 2019, true),
+('Honda', 'Civic', 2021, true),
+('BMW', '3 Series', 2022, true),
+('Tesla', 'Model 3', 2023, true)
 ON CONFLICT DO NOTHING;

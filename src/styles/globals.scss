@@ -1,0 +1,341 @@
+@use 'admin-layout';
+@use 'variables' as vars;
+@use 'utilities';
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+        'Helvetica Neue', Arial, sans-serif;
+    margin: 0;
+    color: vars.$text-primary;
+    background: vars.$bg-color;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+// Container
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: vars.$spacing-xl vars.$spacing-lg;
+}
+
+// Header
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: vars.$spacing-lg 0;
+    margin-bottom: vars.$spacing-xl;
+    border-bottom: 1px solid vars.$border-color;
+
+    h1,
+    h2 {
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: vars.$text-primary;
+        margin: 0;
+    }
+}
+
+// Forms
+.auth-inline {
+    display: flex;
+    gap: vars.$spacing-sm;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: vars.$spacing-xs;
+    margin-bottom: vars.$spacing-md;
+}
+
+.form-label {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: vars.$text-primary;
+}
+
+input[type='text'],
+input[type='email'],
+input[type='password'],
+input[type='number'],
+input[type='date'],
+input[type='datetime-local'],
+select,
+textarea {
+    padding: vars.$spacing-sm vars.$spacing-md;
+    border: 1px solid vars.$border-color;
+    border-radius: vars.$border-radius-sm;
+    font-size: 0.875rem;
+    transition: all vars.$transition-fast;
+    background: vars.$bg-card;
+    color: vars.$text-primary;
+
+    &:focus {
+        outline: none;
+        border-color: vars.$primary;
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    }
+
+    &::placeholder {
+        color: vars.$text-muted;
+    }
+}
+
+// Grids
+.vehicles-grid,
+.cars-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: vars.$spacing-lg;
+    margin-top: vars.$spacing-lg;
+}
+
+.rentals-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: vars.$spacing-lg;
+    margin-top: vars.$spacing-lg;
+}
+
+// Cards
+.card {
+    border: 1px solid vars.$border-color;
+    padding: vars.$spacing-lg;
+    border-radius: vars.$border-radius;
+    background: vars.$bg-card;
+    box-shadow: vars.$shadow-sm;
+    transition: all vars.$transition-normal;
+
+    &:hover {
+        box-shadow: vars.$shadow-md;
+        transform: translateY(-2px);
+    }
+
+    h3,
+    h4 {
+        margin: 0 0 vars.$spacing-sm 0;
+        color: vars.$text-primary;
+        font-weight: 600;
+    }
+
+    p {
+        margin: vars.$spacing-xs 0;
+        color: vars.$text-secondary;
+        font-size: 0.875rem;
+    }
+}
+
+.card-actions {
+    display: flex;
+    gap: vars.$spacing-sm;
+    margin-top: vars.$spacing-md;
+    flex-wrap: wrap;
+}
+
+.stat-card {
+    background: linear-gradient(
+        135deg,
+        vars.$primary 0%,
+        vars.$primary-hover 100%
+    );
+    color: white;
+    border: none;
+
+    p {
+        color: rgba(255, 255, 255, 0.9);
+    }
+
+    &:hover {
+        transform: translateY(-2px);
+    }
+}
+
+// Buttons
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: vars.$spacing-sm vars.$spacing-md;
+    border-radius: vars.$border-radius-sm;
+    border: none;
+    cursor: pointer;
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: all vars.$transition-fast;
+    text-decoration: none;
+
+    &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+}
+
+.btn-primary {
+    background: vars.$primary;
+    color: white;
+
+    &:hover:not(:disabled) {
+        background: vars.$primary-hover;
+        box-shadow: vars.$shadow-md;
+    }
+}
+
+.btn-secondary {
+    background: vars.$secondary;
+    color: white;
+
+    &:hover:not(:disabled) {
+        background: darken(vars.$secondary, 10%);
+    }
+}
+
+.btn-success {
+    background: vars.$success;
+    color: white;
+
+    &:hover:not(:disabled) {
+        background: darken(vars.$success, 10%);
+    }
+}
+
+.btn-danger {
+    background: vars.$danger;
+    color: white;
+
+    &:hover:not(:disabled) {
+        background: darken(vars.$danger, 10%);
+    }
+}
+
+.btn-outline {
+    background: transparent;
+    border: 1px solid vars.$border-color;
+    color: vars.$text-primary;
+
+    &:hover:not(:disabled) {
+        background: vars.$bg-hover;
+        border-color: vars.$primary;
+        color: vars.$primary;
+    }
+}
+
+.btn-sm {
+    padding: 0.375rem 0.75rem;
+    font-size: 0.8125rem;
+}
+
+.btn-lg {
+    padding: vars.$spacing-md vars.$spacing-lg;
+    font-size: 1rem;
+}
+
+// Navigation
+nav {
+    display: flex;
+    gap: vars.$spacing-md;
+    align-items: center;
+
+    a {
+        color: vars.$text-secondary;
+        text-decoration: none;
+        padding: vars.$spacing-sm vars.$spacing-md;
+        border-radius: vars.$border-radius-sm;
+        transition: all vars.$transition-fast;
+        font-weight: 500;
+
+        &:hover {
+            background: vars.$bg-hover;
+            color: vars.$primary;
+        }
+
+        &.active {
+            color: vars.$primary;
+            background: rgba(37, 99, 235, 0.1);
+        }
+    }
+}
+
+// Utility Classes
+.text-muted {
+    color: vars.$text-muted;
+}
+
+.text-secondary {
+    color: vars.$text-secondary;
+}
+
+.text-primary {
+    color: vars.$primary;
+}
+
+.text-danger {
+    color: vars.$danger;
+}
+
+.text-success {
+    color: vars.$success;
+}
+
+.text-warning {
+    color: vars.$warning;
+}
+
+.badge {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+
+    &.badge-success {
+        background: rgba(16, 185, 129, 0.1);
+        color: vars.$success;
+    }
+
+    &.badge-danger {
+        background: rgba(239, 68, 68, 0.1);
+        color: vars.$danger;
+    }
+
+    &.badge-primary {
+        background: rgba(37, 99, 235, 0.1);
+        color: vars.$primary;
+    }
+
+    &.badge-warning {
+        background: rgba(245, 158, 11, 0.1);
+        color: vars.$warning;
+    }
+}
+
+// Loading State
+.loading {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: vars.$spacing-xl;
+    color: vars.$text-muted;
+}
+
+// Empty State
+.empty-state {
+    text-align: center;
+    padding: vars.$spacing-xl * 2;
+    color: vars.$text-muted;
+
+    h3 {
+        color: vars.$text-secondary;
+        margin-bottom: vars.$spacing-sm;
+    }
+}
