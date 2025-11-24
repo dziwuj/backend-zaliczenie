@@ -1,19 +1,46 @@
-import { NextResponse } from 'next/server';
+import NextAuth from 'next-auth';
+import CredentialsProvider from 'next-auth/providers/credentials';
+import { getUserByEmail } from '@/lib/db-pg';
+import bcrypt from 'bcryptjs';
 
-// Placeholder for Auth.js NextAuth handler. The full NextAuth integration
-// caused build issues with the current package exports; the app uses a
-// local credential endpoint at `/api/auth/local` for frontend sign-in.
+export const dynamic = 'force-dynamic';
 
-export async function GET() {
-    return NextResponse.json({
-        ok: true,
-        message: 'NextAuth placeholder - use /api/auth/local',
-    });
-}
+const handler = NextAuth({
+    providers: [
+        CredentialsProvider({
+            name: 'Credentials',
+            credentials: {
+                email: {
+                    label: 'Email',
+                    type: 'email',
+                    placeholder: 'email@example.com',
+                },
+                password: { label: 'Password', type: 'password' },
+            },
+            async authorize(credentials) {
+                if (!credentials?.email || !credentials?.password) return null;
+                const user = await getUserByEmail(credentials.email);
+                if (!user || !user.password_hash) return null;
+                const valid = await bcrypt.compare(
+                    credentials.password,
+                    user.password_hash
+                );
+                if (!valid) return null;
+                return {
+                    id: String(user.id),
+                    email: user.email,
+                    role: user.role,
+                };
+            },
+        }),
+    ],
+    session: {
+        strategy: 'jwt',
+    },
+    secret: process.env.NEXTAUTH_SECRET,
+    pages: {
+        signIn: '/',
+    },
+});
 
-export async function POST() {
-    return NextResponse.json(
-        { ok: false, message: 'Not implemented in this branch' },
-        { status: 501 }
-    );
-}
+export { handler as GET, handler as POST };

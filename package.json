@@ -8,13 +8,13 @@
         "start": "next start",
         "lint": "eslint",
         "docker:up": "docker-compose up --build",
-        "docker:down": "docker-compose down"
+        "docker:down": "docker-compose down",
+        "docker:rebuild": "docker compose down && docker compose up --build -d"
     },
     "dependencies": {
-        "@auth/core": "^0.34.3",
-        "@auth/nextjs": "^0.0.0-380f8d56",
         "bcryptjs": "^2.4.3",
         "next": "16.0.3",
+        "next-auth": "^4.24.13",
         "pg": "^8.11.0",
         "react": "19.2.0",
         "react-dom": "19.2.0",
@@ -22,6 +22,7 @@
     },
     "devDependencies": {
         "@types/bcryptjs": "^2.4.2",
+        "@types/next-auth": "^3.15.0",
         "@types/node": "^20",
         "@types/pg": "^8.15.6",
         "@types/react": "^19",
