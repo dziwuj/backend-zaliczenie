@@ -1,0 +1,44 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  email         String   @unique
+  password_hash String?
+  role          String   @default("user")
+  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz
+  rentals       Reservation[]
+
+  @@map("users")
+}
+
+model Vehicle {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  make      String
+  model     String
+  year      Int?
+  available Boolean  @default(true)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+  rentals   Reservation[]
+
+  @@map("vehicles")
+}
+
+model Reservation {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  vehicleId  String   @map("vehicle_id") @db.Uuid
+  userId     String   @map("user_id") @db.Uuid
+  fromTs     DateTime @map("from_ts") @db.Timestamptz
+  toTs       DateTime @map("to_ts") @db.Timestamptz
+  status     String   @default("pending")
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  vehicle    Vehicle  @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+
+  @@map("reservations")
+}

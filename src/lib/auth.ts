@@ -1,12 +1,1 @@
-export const authConfig = {
-    providers: [],
-    session: {
-        strategy: 'jwt' as const,
-    },
-    secret: process.env.NEXTAUTH_SECRET,
-    pages: {
-        signIn: '/',
-    },
-};
-
-export default authConfig;
+// NextAuth config is now in /api/auth/[...nextauth]/route.ts

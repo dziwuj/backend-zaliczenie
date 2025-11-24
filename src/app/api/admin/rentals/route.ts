@@ -1,20 +1,24 @@
-import { createReservation } from '@/lib/db';
+import { NextResponse } from 'next/server';
+import { createReservation, getReservationsWithDetails } from '@/lib/db';
+
+export const dynamic = 'force-dynamic';
 
 // POST create rental (admin only)
-export async function POST(req: Request) {
+export async function POST(req: Request): Promise<Response> {
     const data = await req.json();
-    // expects: { user_id, vehicle_id, from_ts, to_ts }
     if (!data.user_id || !data.vehicle_id || !data.from_ts || !data.to_ts) {
         return NextResponse.json(
             { error: 'Missing required fields' },
             { status: 400 }
         );
     }
+    const userId = String(data.user_id);
+    const vehicleId = String(data.vehicle_id);
     try {
         // Rentals created by admin are auto-approved
         const rental = await createReservation({
-            user_id: data.user_id,
-            vehicle_id: data.vehicle_id,
+            user_id: userId,
+            vehicle_id: vehicleId,
             from_ts: data.from_ts,
             to_ts: data.to_ts,
             status: 'approved',
@@ -27,21 +31,25 @@ export async function POST(req: Request) {
         );
     }
 }
-import { NextResponse } from 'next/server';
-import { getReservationsWithDetails } from '@/lib/db';
 
 // GET all rentals with details (admin only)
-
-export async function GET(req: Request) {
-    const { searchParams } = new URL(req.url);
-    const userId = searchParams.get('userId');
-    const vehicleId = searchParams.get('vehicleId');
-    let rentals = await getReservationsWithDetails();
-    if (userId) {
-        rentals = rentals.filter((r) => r.user_id === userId);
+export async function GET(req: Request): Promise<Response> {
+    try {
+        const { searchParams } = new URL(req.url);
+        const userId = searchParams.get('userId');
+        const vehicleId = searchParams.get('vehicleId');
+        let rentals = await getReservationsWithDetails();
+        if (userId) {
+            rentals = rentals.filter((r) => r.user_id === userId);
+        }
+        if (vehicleId) {
+            rentals = rentals.filter((r) => r.vehicle_id === vehicleId);
+        }
+        return NextResponse.json(rentals);
+    } catch (error) {
+        return NextResponse.json(
+            { error: error instanceof Error ? error.message : 'Unknown error' },
+            { status: 500 }
+        );
     }
-    if (vehicleId) {
-        rentals = rentals.filter((r) => r.vehicle_id === vehicleId);
-    }
-    return NextResponse.json(rentals);
 }

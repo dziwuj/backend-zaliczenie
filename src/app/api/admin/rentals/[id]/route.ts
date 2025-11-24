@@ -1,115 +1,131 @@
 import { NextResponse } from 'next/server';
 import { dbExtras } from '@/lib/db';
-import { Pool } from 'pg';
-import { DB_MODE } from '@/lib/db';
+
+export const dynamic = 'force-dynamic';
 
 // PATCH update rental (admin only)
 export async function PATCH(
     request: Request,
-    { params }: { params: Promise<{ id: string }> }
+    context: { params: Promise<{ id: string }> }
 ) {
-    const { id } = await params;
-    const body = await request.json().catch(() => ({}));
-    const { status, user_id, vehicle_id, from_ts, to_ts } = body;
-
-    // Only allow update of allowed fields
-    if (!status && !user_id && !vehicle_id && !from_ts && !to_ts) {
+    const { id } = await context.params;
+    if (!id || typeof id !== 'string') {
         return NextResponse.json(
-            { error: 'No fields to update' },
+            { error: 'Invalid rental id' },
             { status: 400 }
         );
     }
-
-    // If only status, use existing logic
-    if (status && !user_id && !vehicle_id && !from_ts && !to_ts) {
-        if (!['approved', 'rejected', 'pending'].includes(status)) {
-            return NextResponse.json(
-                {
-                    error: 'Invalid status. Must be: approved, rejected, or pending',
-                },
-                { status: 400 }
-            );
-        }
-        const { updateReservationStatus } = await import('@/lib/db');
-        const result = await updateReservationStatus(id, status);
-        return NextResponse.json(result);
-    }
-
-    // For full edit (admin): update reservation fields
-    if (DB_MODE !== 'pg') {
-        return NextResponse.json(
-            { error: 'Only pg mode supported for admin edit' },
-            { status: 400 }
-        );
-    }
-    // Direct SQL update (for demo, should be in db layer)
-    const pool = new Pool({ connectionString: process.env.DATABASE_URL });
-    const fields = [];
-    const values = [];
-    let idx = 1;
-    if (user_id) {
-        fields.push(`user_id=$${idx++}`);
-        values.push(user_id);
-    }
-    if (vehicle_id) {
-        fields.push(`vehicle_id=$${idx++}`);
-        values.push(vehicle_id);
-    }
-    if (from_ts) {
-        fields.push(`from_ts=$${idx++}`);
-        values.push(from_ts);
-    }
-    if (to_ts) {
-        fields.push(`to_ts=$${idx++}`);
-        values.push(to_ts);
-    }
-    if (status) {
-        fields.push(`status=$${idx++}`);
-        values.push(status);
-    }
-    if (fields.length === 0) {
-        return NextResponse.json(
-            { error: 'No valid fields to update' },
-            { status: 400 }
-        );
-    }
-    const sql = `UPDATE reservations SET ${fields.join(
-        ', '
-    )} WHERE id=$${idx} RETURNING id, vehicle_id, user_id, from_ts, to_ts, status`;
-    values.push(id);
+    let body: Record<string, unknown> = {};
     try {
-        const res = await pool.query(sql, values);
-        await pool.end();
-        if (res.rows.length === 0) {
-            return NextResponse.json(
-                { error: 'Rental not found' },
-                { status: 404 }
-            );
+        body = (await request.json()) as Record<string, unknown>;
+    } catch {
+        try {
+            const txt = await request.text();
+            if (txt) {
+                try {
+                    body = JSON.parse(txt) as Record<string, unknown>;
+                } catch {
+                    const params = new URLSearchParams(txt);
+                    if (params.has('status')) {
+                        body = { status: params.get('status') };
+                    } else {
+                        body = {};
+                    }
+                }
+            }
+        } catch {
+            body = {};
         }
-        return NextResponse.json(res.rows[0]);
-    } catch (e: unknown) {
-        if (e instanceof Error)
+    }
+
+    const hasStatus = Object.prototype.hasOwnProperty.call(body, 'status');
+    const hasEditFields =
+        Object.prototype.hasOwnProperty.call(body, 'user_id') ||
+        Object.prototype.hasOwnProperty.call(body, 'vehicle_id') ||
+        Object.prototype.hasOwnProperty.call(body, 'from_ts') ||
+        Object.prototype.hasOwnProperty.call(body, 'to_ts');
+
+    try {
+        if (hasStatus) {
+            let status = (body as Record<string, unknown>).status;
+            if (status === undefined || status === null) {
+                return NextResponse.json(
+                    { error: 'Status is required' },
+                    { status: 400 }
+                );
+            }
+            if (typeof status !== 'string') {
+                if (typeof status === 'number' || typeof status === 'boolean') {
+                    status = String(status);
+                } else {
+                    return NextResponse.json(
+                        { error: 'Status must be a string' },
+                        { status: 400 }
+                    );
+                }
+            }
+            const statusStr: string = status as string;
+            const updated = await dbExtras.updateReservationStatus(
+                id,
+                statusStr
+            );
+            return NextResponse.json(updated);
+        } else if (hasEditFields) {
+            const payload: Partial<{
+                user_id: string;
+                vehicle_id: string;
+                from_ts: string;
+                to_ts: string;
+                status?: string;
+            }> = {};
+            if (body.user_id && typeof body.user_id === 'string')
+                payload.user_id = body.user_id as string;
+            if (body.vehicle_id && typeof body.vehicle_id === 'string')
+                payload.vehicle_id = body.vehicle_id as string;
+            if (body.from_ts && typeof body.from_ts === 'string')
+                payload.from_ts = body.from_ts as string;
+            if (body.to_ts && typeof body.to_ts === 'string')
+                payload.to_ts = body.to_ts as string;
+            if (body.status && typeof body.status === 'string')
+                payload.status = body.status as string;
+
+            const updated = await dbExtras.updateReservation(id, payload);
+            return NextResponse.json(updated);
+        } else {
             return NextResponse.json(
-                { error: e.message || 'Failed to update rental' },
+                { error: 'Status is required' },
                 { status: 400 }
             );
+        }
+    } catch (error: unknown) {
+        try {
+            console.error('[admin/rentals PATCH] error:', error);
+        } catch {}
+        let message = 'Failed to update reservation';
+        if (typeof error === 'object' && error !== null) {
+            const errObj = error as { message?: unknown };
+            if (typeof errObj.message === 'string') message = errObj.message;
+        }
+        return NextResponse.json(
+            { error: message, debug: String(error) },
+            { status: 400 }
+        );
     }
 }
 
 // DELETE rental (admin only)
+
 export async function DELETE(
     request: Request,
-    { params }: { params: Promise<{ id: string }> }
-) {
-    const { id } = await params;
-
-    if (!dbExtras || typeof dbExtras.deleteReservation !== 'function') {
+    context: { params: Promise<{ id: string }> }
+): Promise<Response> {
+    const { id } = await context.params;
+    if (!id || typeof id !== 'string') {
         return NextResponse.json(
-            { error: 'DB deleteReservation not implemented' },
-            { status: 500 }
+            { error: 'Invalid rental id' },
+            { status: 400 }
         );
     }
-
     const result = await dbExtras.deleteReservation(id);
     return NextResponse.json(result);
 }

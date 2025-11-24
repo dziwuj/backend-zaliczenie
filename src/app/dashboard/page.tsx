@@ -1,6 +1,5 @@
 'use client';
 
-// ...existing code...
 import useStore from '@/store/userStore';
 
 export default function DashboardPage() {

@@ -1,17 +1,8 @@
-export async function getAllUsers(): Promise<User[]> {
-    if (DB_MODE === 'pg') return pg.getAllUsers();
-    if (DB_MODE === 'none')
-        return [
-            { id: 'admin-id', email: 'admin@rental.com', role: 'admin' },
-            { id: 'user-id', email: 'user@rental.com', role: 'user' },
-        ];
-    throw new Error('DB not implemented for mode: ' + DB_MODE);
-}
-import * as pg from './db-pg';
+import * as prismaDb from './db-prisma';
 
-export type Vehicle = pg.Vehicle;
-export type Reservation = pg.Reservation;
-export type User = pg.User;
+export type Vehicle = prismaDb.Vehicle;
+export type Reservation = prismaDb.Reservation;
+export type User = prismaDb.User;
 
 export type ReservationCreate = {
     vehicle_id: string;
@@ -40,18 +31,12 @@ export interface DbExtras {
     addVehicle: (v: {
         make: string;
         model: string;
-        year?: number;
-        available?: boolean;
+        year: number;
     }) => Promise<Vehicle>;
     updateVehicle: (
         id: string,
-        v: Partial<{
-            make: string;
-            model: string;
-            year: number;
-            available: boolean;
-        }>
-    ) => Promise<Vehicle>;
+        v: Partial<{ make: string; model: string; year: number }>
+    ) => Promise<Vehicle | null>;
     deleteVehicle: (id: string) => Promise<{ id: string }>;
     getReservations: () => Promise<Reservation[]>;
     getReservationsWithDetails: () => Promise<RentalWithDetails[]>;
@@ -70,45 +55,41 @@ export interface DbExtras {
         id: string,
         status: string
     ) => Promise<Reservation & { status: string }>;
+    updateReservation: (
+        id: string,
+        payload: Partial<ReservationCreate>
+    ) => Promise<Reservation & { status: string }>;
     deleteReservation: (id: string) => Promise<{ id: string }>;
 }
 
-export const DB_MODE = process.env.DB_MODE || 'pg'; // 'none' | 'pg' | 'prisma'
+export async function getAllUsers(): Promise<User[]> {
+    return prismaDb.getAllUsers();
+}
 
 export async function getVehicles() {
-    if (DB_MODE === 'pg') return pg.getVehicles();
-    if (DB_MODE === 'none')
-        return [
-            {
-                id: 'v1',
-                make: 'Toyota',
-                model: 'Corolla',
-                year: 2020,
-                available: true,
-            },
-            {
-                id: 'v2',
-                make: 'Ford',
-                model: 'Focus',
-                year: 2019,
-                available: true,
-            },
-        ];
-    throw new Error('DB not implemented for mode: ' + DB_MODE);
+    return prismaDb.getVehicles();
 }
 
 export async function getReservations() {
-    if (DB_MODE === 'pg') return pg.getReservations();
-    if (DB_MODE === 'none') return [];
-    throw new Error('DB not implemented for mode: ' + DB_MODE);
+    return prismaDb.getReservations();
 }
 
 export async function getReservationsWithDetails(): Promise<
     RentalWithDetails[]
 > {
-    if (DB_MODE === 'pg') return pg.getReservationsWithDetails();
-    if (DB_MODE === 'none') return [];
-    throw new Error('DB not implemented for mode: ' + DB_MODE);
+    const reservations = await prismaDb.getReservationsWithDetails();
+    return reservations.map((r: prismaDb.ReservationWithDetails) => ({
+        id: r.id,
+        vehicle_id: r.vehicleId,
+        user_id: r.userId,
+        from_ts: r.fromTs instanceof Date ? r.fromTs.toISOString() : r.fromTs,
+        to_ts: r.toTs instanceof Date ? r.toTs.toISOString() : r.toTs,
+        status: r.status,
+        vehicle_make: r.vehicle_make,
+        vehicle_model: r.vehicle_model,
+        vehicle_year: r.vehicle_year ?? undefined,
+        user_email: r.user_email,
+    }));
 }
 
 export async function checkReservationConflict(
@@ -116,44 +97,45 @@ export async function checkReservationConflict(
     fromTs: string,
     toTs: string
 ) {
-    if (DB_MODE === 'pg')
-        return pg.checkReservationConflict(vehicleId, fromTs, toTs);
-    if (DB_MODE === 'none') return false;
-    throw new Error('DB not implemented for mode: ' + DB_MODE);
+    return prismaDb.checkReservationConflict(vehicleId, fromTs, toTs);
 }
 
 export async function createReservation(
     payload: ReservationCreate
 ): Promise<Reservation & { status: string }> {
-    if (DB_MODE === 'pg') return pg.createReservation(payload);
-    if (DB_MODE === 'none')
-        return { id: 'r-local-' + Date.now(), ...payload, status: 'pending' };
-    throw new Error('DB not implemented for mode: ' + DB_MODE);
+    return prismaDb.createReservation(payload);
 }
 
 export async function getUserReservationsWithDetails(
     userId: string
 ): Promise<RentalWithDetails[]> {
-    if (DB_MODE === 'pg') return pg.getUserReservationsWithDetails(userId);
-    if (DB_MODE === 'none') return [];
-    throw new Error('DB not implemented for mode: ' + DB_MODE);
+    const reservations = await prismaDb.getUserReservationsWithDetails(userId);
+    return reservations.map((r: prismaDb.ReservationWithDetails) => ({
+        id: r.id,
+        vehicle_id: r.vehicleId,
+        user_id: r.userId,
+        from_ts: r.fromTs instanceof Date ? r.fromTs.toISOString() : r.fromTs,
+        to_ts: r.toTs instanceof Date ? r.toTs.toISOString() : r.toTs,
+        status: r.status,
+        vehicle_make: r.vehicle_make,
+        vehicle_model: r.vehicle_model,
+        vehicle_year: r.vehicle_year ?? undefined,
+        user_email: r.user_email,
+    }));
 }
 
-export async function updateReservationStatus(
-    id: string,
-    status: string
-): Promise<Reservation & { status: string }> {
-    if (DB_MODE === 'pg') return pg.updateReservationStatus(id, status);
-    if (DB_MODE === 'none')
-        return {
-            id,
-            vehicle_id: '',
-            user_id: '',
-            from_ts: '',
-            to_ts: '',
-            status,
-        };
-    throw new Error('DB not implemented for mode: ' + DB_MODE);
-}
-
-export const dbExtras: DbExtras = pg as unknown as DbExtras;
+export const dbExtras: DbExtras = {
+    getVehicles: prismaDb.getVehicles,
+    getVehicleById: prismaDb.getVehicleById,
+    addVehicle: prismaDb.addVehicle,
+    updateVehicle: prismaDb.updateVehicle,
+    deleteVehicle: prismaDb.deleteVehicle,
+    getReservations: prismaDb.getReservations,
+    getReservationsWithDetails,
+    getUserReservationsWithDetails,
+    createReservation: prismaDb.createReservation,
+    checkReservationConflict: prismaDb.checkReservationConflict,
+    updateReservationStatus: prismaDb.updateReservationStatus,
+    updateReservation: prismaDb.updateReservation,
+    deleteReservation: prismaDb.deleteReservation,
+};
